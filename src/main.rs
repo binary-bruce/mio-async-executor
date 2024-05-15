@@ -1,17 +1,28 @@
+use udp_socket::UdpSocket;
+
+use crate::core::new_executor_spawner;
+
+mod core;
 mod executor;
+mod reactor;
+mod spawner;
+mod task;
+mod udp_socket;
+mod waker;
 
 fn main() {
-    let (executor, spawner) = executor::new_executor_spawner();
+    let (executor, spawner) = new_executor_spawner();
     spawner.spawn(async_main());
     // Drop this spawner, so that the `run` method can stop as soon as all other
     // spawners (stored within tasks) are dropped
     drop(spawner);
 
+    println!("executor is running...");
     executor.run();
 }
 
 async fn async_main() {
-    let socket = executor::UdpSocket::bind("127.0.0.1:8000").unwrap();
+    let socket = UdpSocket::bind("127.0.0.1:8000").unwrap();
 
     // Receives a single datagram message on the socket. If `buf` is too small to hold
     // the message, it will be cut off.
