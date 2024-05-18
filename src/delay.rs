@@ -1,10 +1,11 @@
 use std::{
     future::Future,
+    pin::Pin,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    task::Poll,
+    task::{Context, Poll},
     thread,
     time::Duration,
 };
@@ -32,10 +33,7 @@ impl Delay {
 impl Future for Delay {
     type Output = ();
 
-    fn poll(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         if !self.started.load(Ordering::Relaxed) {
             self.started.swap(true, Ordering::Relaxed);
 
