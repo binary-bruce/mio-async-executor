@@ -3,6 +3,7 @@ use udp_socket::UdpSocket;
 use crate::core::new_executor_spawner;
 
 mod core;
+mod delay;
 mod executor;
 mod reactor;
 mod spawner;
@@ -12,6 +13,7 @@ mod waker;
 
 fn main() {
     let (executor, spawner) = new_executor_spawner();
+    spawner.spawn(async_delay());
     spawner.spawn(async_main());
     // Drop this spawner, so that the `run` method can stop as soon as all other
     // spawners (stored within tasks) are dropped
@@ -33,4 +35,10 @@ async fn async_main() {
     let buf = &mut buf[..amt];
     buf.reverse();
     socket.send_to(buf, src).await.unwrap();
+}
+
+async fn async_delay() {
+    println!("delay 10 seconds..");
+    delay::delay(10).await;
+    println!("time to work..")
 }
