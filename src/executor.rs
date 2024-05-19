@@ -9,6 +9,8 @@ pub struct Executor {
     pub ready_queue: mpsc::Receiver<Arc<Task>>,
 }
 
+/// Executor just pick the task from a receiver channel and try to poll it to make some progress
+/// until the channel gets closed(no more task to poll)
 impl Executor {
     pub fn run(&self) {
         while let Ok(task) = self.ready_queue.recv() {

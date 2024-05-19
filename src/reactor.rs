@@ -13,6 +13,8 @@ pub enum Status {
     Happened,
 }
 
+/// Reactor is an event loop, polling on a list of registered events in a dedicated thread
+/// if an event happens, the reactor finds the respective waker and wake the task(send it to the channel to notify the executor)
 pub struct Reactor {
     pub registry: Registry,
     statuses: Mutex<HashMap<Token, Status>>,
@@ -72,7 +74,7 @@ impl Reactor {
     }
 }
 
-pub fn run(mut poll: mio::Poll) -> ! {
+fn run(mut poll: mio::Poll) -> ! {
     let reactor = Reactor::get();
     let mut events = Events::with_capacity(1024);
 
