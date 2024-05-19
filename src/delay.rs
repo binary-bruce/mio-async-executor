@@ -41,7 +41,7 @@ impl Future for Delay {
             let waker = cx.waker().clone();
             let seconds = self.seconds;
             thread::spawn(move || {
-                thread::sleep(Duration::from_secs(seconds));
+                thread::sleep(Duration::from_secs(seconds)); // it's not smart, but it works for now
                 completed.swap(true, Ordering::Relaxed);
 
                 waker.wake();
