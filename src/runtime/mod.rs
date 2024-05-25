@@ -1,15 +1,9 @@
 use std::sync::mpsc;
 
-use executor::Executor;
-use spawner::Spawner;
+use self::core::{executor::Executor, spawner::Spawner};
 
-pub mod executor;
+pub mod core;
 pub mod futures;
-pub mod spawner;
-
-mod reactor;
-mod task;
-mod waker;
 
 pub fn new_executor_spawner() -> (Executor, Spawner) {
     const MAX_QUEUED_TASKS: usize = 10_000;
