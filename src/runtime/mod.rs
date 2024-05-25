@@ -3,11 +3,9 @@ use std::sync::mpsc;
 use executor::Executor;
 use spawner::Spawner;
 
-pub mod delay;
 pub mod executor;
+pub mod futures;
 pub mod spawner;
-pub mod udp_socket;
-pub mod yield_now;
 
 mod reactor;
 mod task;

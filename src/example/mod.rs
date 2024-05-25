@@ -1,6 +1,6 @@
-use crate::runtime::delay::delay;
-use crate::runtime::udp_socket::UdpSocket;
-use crate::runtime::yield_now::yield_now;
+use crate::runtime::futures::delay::delay;
+use crate::runtime::futures::udp_socket::UdpSocket;
+use crate::runtime::futures::yield_now::yield_now;
 
 const N: u8 = 3;
 
