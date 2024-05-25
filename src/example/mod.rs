@@ -2,16 +2,18 @@ use crate::delay::delay;
 use crate::udp_socket::UdpSocket;
 use crate::yield_now::yield_now;
 
+const N: u8 = 3;
+
 pub async fn tick() {
-    loop {
-        println!("tick");
+    for num in 0..N {
+        println!("tick - {num}");
         yield_now().await;
     }
 }
 
 pub async fn tock() {
-    loop {
-        println!("tock");
+    for num in 0..N {
+        println!("tock - {num}");
         yield_now().await;
     }
 }
