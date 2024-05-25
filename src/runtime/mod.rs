@@ -40,7 +40,8 @@ mod tests {
         });
 
         spawner.spawn(async move {
-            let received = receiver.recv().unwrap(); // yeah, it's blocking, should looking for some async altermative
+            // yeah, it's blocking, should looking for some async alternative
+            let received = receiver.recv().unwrap();
             assert_eq!("hello", received);
         });
 
@@ -73,8 +74,7 @@ mod tests {
         use super::futures::udp_socket::UdpSocket;
 
         let socket = UdpSocket::bind("127.0.0.1:9999").unwrap();
-        let _ = socket
-            .send_to(greeting.as_bytes(), "127.0.0.1:8888".parse().unwrap())
-            .await;
+        let server_addr = "127.0.0.1:8888".parse().unwrap();
+        let _ = socket.send_to(greeting.as_bytes(), server_addr).await;
     }
 }
