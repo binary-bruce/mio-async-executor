@@ -1,16 +1,8 @@
-use crate::core::new_executor_spawner;
 use crate::example::{tick, tock, udp_client, udp_server};
+use crate::runtime::new_executor_spawner;
 
-mod core;
-mod delay;
 mod example;
-mod executor;
-mod reactor;
-mod spawner;
-mod task;
-mod udp_socket;
-mod waker;
-mod yield_now;
+mod runtime;
 
 fn main() {
     let (executor, spawner) = new_executor_spawner();

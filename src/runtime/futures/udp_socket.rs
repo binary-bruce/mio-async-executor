@@ -5,7 +5,7 @@ use std::{
 
 use mio::{Interest, Token};
 
-use crate::reactor::Reactor;
+use crate::runtime::core::reactor::Reactor;
 
 pub struct UdpSocket {
     socket: mio::net::UdpSocket,

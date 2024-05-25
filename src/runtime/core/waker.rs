@@ -3,7 +3,7 @@ use std::{
     task::{RawWaker, RawWakerVTable},
 };
 
-use crate::task::Task;
+use super::task::Task;
 
 const WAKER_VTABLE: RawWakerVTable = RawWakerVTable::new(clone, wake, wake_by_ref, drop);
 

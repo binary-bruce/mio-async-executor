@@ -3,7 +3,7 @@ use std::{
     task::Context,
 };
 
-use crate::task::Task;
+use super::task::Task;
 
 pub struct Executor {
     pub ready_queue: mpsc::Receiver<Arc<Task>>,
