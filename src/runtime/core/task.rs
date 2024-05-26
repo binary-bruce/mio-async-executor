@@ -5,7 +5,9 @@ use std::{
     task::{RawWaker, Waker},
 };
 
-use super::{spawner::Spawner, waker::get_waker_vtable};
+use crate::runtime::waker::reactor_waker::get_waker_vtable;
+
+use super::spawner::Spawner;
 
 /// a task is a pinned future that is to be polled by the executor
 pub struct Task {
