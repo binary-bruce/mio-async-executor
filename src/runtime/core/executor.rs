@@ -1,4 +1,5 @@
 use std::{
+    future::Future,
     sync::{mpsc, Arc},
     task::Context,
 };
@@ -23,5 +24,21 @@ impl Executor {
             // Allow the future some CPU time to make progress
             let _ = future.as_mut().poll(&mut context);
         }
+    }
+
+    pub fn block_on<F: Future>(future: F) -> F::Output {
+        extreme::run(future)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Executor;
+
+    #[test]
+    fn test_block_on() {
+        let answer = Executor::block_on(async { 42 });
+
+        assert_eq!(42, answer);
     }
 }
