@@ -49,3 +49,20 @@ static VTABLE: RawWakerVTable = RawWakerVTable::new(
     |wake_by_ref_me| unsafe { unpark(&*(wake_by_ref_me as *const Park)) },
     |drop_me| unsafe { drop(Arc::from_raw(drop_me as *const Park)) },
 );
+
+#[cfg(test)]
+mod tests {
+    use std::thread;
+
+    use super::new_park;
+
+    #[test]
+    fn should_not_deadlock() {
+        let park = new_park();
+        let park_cloned = park.clone();
+        let handle = thread::spawn(move || park_cloned.unpark());
+        park.park(); // to be unparked by the spawned thread
+
+        let _ = handle.join();
+    }
+}
