@@ -4,6 +4,7 @@ use self::core::{executor::Executor, spawner::Spawner};
 
 pub mod core;
 pub mod futures;
+pub(crate) mod waker;
 
 pub fn new_executor_spawner() -> (Executor, Spawner) {
     const MAX_QUEUED_TASKS: usize = 10_000;
