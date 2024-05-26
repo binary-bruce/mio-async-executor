@@ -11,7 +11,7 @@ pub fn new_park() -> Arc<Park> {
 
 pub fn construct_waker(park: Arc<Park>) -> Waker {
     let sender = Arc::into_raw(park.clone());
-    let raw_waker = RawWaker::new(sender as *const _, &VTABLE);
+    let raw_waker = RawWaker::new(sender as *const _, &WAKER_VTABLE);
 
     unsafe { Waker::from_raw(raw_waker) }
 }
@@ -34,12 +34,13 @@ impl Park {
     }
 }
 
-static VTABLE: RawWakerVTable = RawWakerVTable::new(clone, wake, wake_by_ref, drop);
+static WAKER_VTABLE: RawWakerVTable = RawWakerVTable::new(clone, wake, wake_by_ref, drop);
 
 fn clone(ptr: *const ()) -> RawWaker {
     let park = unsafe { Arc::from_raw(ptr as *const Park) };
     std::mem::forget(park.clone());
-    RawWaker::new(Arc::into_raw(park) as *const (), &VTABLE)
+
+    RawWaker::new(Arc::into_raw(park) as *const (), &WAKER_VTABLE)
 }
 
 fn wake(ptr: *const ()) {
