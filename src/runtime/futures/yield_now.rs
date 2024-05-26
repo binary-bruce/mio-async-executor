@@ -32,7 +32,7 @@ impl Future for Yield {
             Poll::Ready(())
         } else {
             self.yielded.swap(true, Relaxed);
-            cx.waker().clone().wake();
+            cx.waker().clone().wake_by_ref();
             Poll::Pending
         }
     }

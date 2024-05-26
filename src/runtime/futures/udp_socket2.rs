@@ -25,7 +25,7 @@ impl Future for UdpSocketReadiness {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         println!("polling UdpSocketReadiness");
-        return Reactor::get().poll(self.token, cx); // register waker
+        Reactor::get().poll(self.token, cx) // register waker
     }
 }
 
