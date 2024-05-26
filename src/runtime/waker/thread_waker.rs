@@ -12,9 +12,8 @@ pub fn new_park() -> Arc<Park> {
 pub fn construct_waker(park: Arc<Park>) -> Waker {
     let sender = Arc::into_raw(park.clone());
     let raw_waker = RawWaker::new(sender as *const _, &VTABLE);
-    let waker = unsafe { Waker::from_raw(raw_waker) };
 
-    waker
+    unsafe { Waker::from_raw(raw_waker) }
 }
 
 #[derive(Default)]
@@ -35,20 +34,31 @@ impl Park {
     }
 }
 
-fn unpark(park: &Park) {
-    park.unpark()
+static VTABLE: RawWakerVTable = RawWakerVTable::new(clone, wake, wake_by_ref, drop);
+
+fn clone(ptr: *const ()) -> RawWaker {
+    let park = unsafe { Arc::from_raw(ptr as *const Park) };
+    std::mem::forget(park.clone());
+    RawWaker::new(Arc::into_raw(park) as *const (), &VTABLE)
 }
 
-static VTABLE: RawWakerVTable = RawWakerVTable::new(
-    |clone_me| unsafe {
-        let arc = Arc::from_raw(clone_me as *const Park);
-        std::mem::forget(arc.clone());
-        RawWaker::new(Arc::into_raw(arc) as *const (), &VTABLE)
-    },
-    |wake_me| unsafe { unpark(&Arc::from_raw(wake_me as *const Park)) },
-    |wake_by_ref_me| unsafe { unpark(&*(wake_by_ref_me as *const Park)) },
-    |drop_me| unsafe { drop(Arc::from_raw(drop_me as *const Park)) },
-);
+fn wake(ptr: *const ()) {
+    let park: Arc<Park> = unsafe { Arc::from_raw(ptr as _) };
+    park.unpark();
+}
+
+fn wake_by_ref(ptr: *const ()) {
+    let park: &Arc<Park> = unsafe { &Arc::from_raw(ptr as _) };
+    park.unpark();
+
+    // we don't actually have ownership of this park value
+    // therefore we must not drop `arc`
+    std::mem::forget(park)
+}
+
+fn drop(ptr: *const ()) {
+    let _: Arc<Park> = unsafe { Arc::from_raw(ptr as _) };
+}
 
 #[cfg(test)]
 mod tests {

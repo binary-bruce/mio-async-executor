@@ -29,18 +29,18 @@ fn drop(ptr: *const ()) {
 }
 
 fn wake(ptr: *const ()) {
-    let arc: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
-    let spawner = arc.spawner.clone();
+    let task: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
+    let spawner = task.spawner.clone();
 
-    spawner.spawn_task(arc);
+    spawner.spawn_task(task);
 }
 
 fn wake_by_ref(ptr: *const ()) {
-    let arc: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
+    let task: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
 
-    arc.spawner.spawn_task(arc.clone());
+    task.spawner.spawn_task(task.clone());
 
     // we don't actually have ownership of this arc value
     // therefore we must not drop `arc`
-    std::mem::forget(arc)
+    std::mem::forget(task)
 }
