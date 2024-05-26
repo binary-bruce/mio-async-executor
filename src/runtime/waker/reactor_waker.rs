@@ -12,35 +12,24 @@ pub fn get_waker_vtable() -> &'static RawWakerVTable {
 }
 
 fn clone(ptr: *const ()) -> RawWaker {
-    let original: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
+    let task = unsafe { Arc::from_raw(ptr as *const Task) };
+    std::mem::forget(task.clone());
 
-    // Increment the inner counter of the arc.
-    let cloned = original.clone();
+    RawWaker::new(Arc::into_raw(task) as *const (), &WAKER_VTABLE)
+}
 
-    // now forget the Arc<Task> so the refcount isn't decremented
-    std::mem::forget(original);
-    std::mem::forget(cloned);
+fn wake(ptr: *const ()) {
+    let task: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
+    let spawner = task.spawner.clone();
 
-    RawWaker::new(ptr, &WAKER_VTABLE)
+    spawner.spawn_task(task);
+}
+
+fn wake_by_ref(ptr: *const ()) {
+    let task: &Arc<Task> = unsafe { &Arc::from_raw(ptr as _) };
+    task.spawner.spawn_task(task.clone());
 }
 
 fn drop(ptr: *const ()) {
     let _: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
-}
-
-fn wake(ptr: *const ()) {
-    let arc: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
-    let spawner = arc.spawner.clone();
-
-    spawner.spawn_task(arc);
-}
-
-fn wake_by_ref(ptr: *const ()) {
-    let arc: Arc<Task> = unsafe { Arc::from_raw(ptr as _) };
-
-    arc.spawner.spawn_task(arc.clone());
-
-    // we don't actually have ownership of this arc value
-    // therefore we must not drop `arc`
-    std::mem::forget(arc)
 }
