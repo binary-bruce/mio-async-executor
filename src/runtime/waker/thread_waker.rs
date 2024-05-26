@@ -51,10 +51,6 @@ fn wake(ptr: *const ()) {
 fn wake_by_ref(ptr: *const ()) {
     let park: &Arc<Park> = unsafe { &Arc::from_raw(ptr as _) };
     park.unpark();
-
-    // we don't actually have ownership of this park value
-    // therefore we must not drop `arc`
-    std::mem::forget(park)
 }
 
 fn drop(ptr: *const ()) {
