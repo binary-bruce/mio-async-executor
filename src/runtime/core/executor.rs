@@ -1,8 +1,10 @@
 use std::{
     future::Future,
     sync::{mpsc, Arc},
-    task::Context,
+    task::{Context, Poll},
 };
+
+use crate::runtime::waker::thread_waker::{construct_waker, new_park};
 
 use super::task::Task;
 
@@ -26,8 +28,18 @@ impl Executor {
         }
     }
 
-    pub fn block_on<F: Future>(future: F) -> F::Output {
-        extreme::run(future)
+    pub fn block_on<F: Future>(mut future: F) -> F::Output {
+        let mut future = unsafe { std::pin::Pin::new_unchecked(&mut future) };
+        let park = new_park();
+        let waker = construct_waker(park.clone());
+        let mut cx = Context::from_waker(&waker);
+
+        loop {
+            match future.as_mut().poll(&mut cx) {
+                Poll::Pending => park.park(),
+                Poll::Ready(val) => return val,
+            }
+        }
     }
 }
 
