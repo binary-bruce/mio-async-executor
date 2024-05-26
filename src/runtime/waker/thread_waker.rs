@@ -64,7 +64,7 @@ mod tests {
     use super::new_park;
 
     #[test]
-    fn should_not_deadlock() {
+    fn should_not_block_forever() {
         let park = new_park();
         let park_cloned = park.clone();
         let handle = thread::spawn(move || park_cloned.unpark());
