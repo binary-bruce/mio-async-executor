@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 mio = { version = "0.8.10", features = [ "net", "os-poll" ] }
+threadpool = "1.8.1"
