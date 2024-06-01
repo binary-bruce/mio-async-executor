@@ -15,11 +15,7 @@ where
 {
     static THREAD_POOL: OnceLock<threadpool::ThreadPool> = OnceLock::new();
 
-    let inner = Arc::new(Mutex::new(SpawnBlockingInner {
-        value: None,
-        waker: None,
-    }));
-
+    let inner = SpawnBlockingInner::new();
     THREAD_POOL.get_or_init(|| ThreadPool::new(4)).execute({
         let inner_cloned = inner.clone();
         move || {
@@ -42,6 +38,15 @@ pub struct SpawnBlocking<T> {
 struct SpawnBlockingInner<T> {
     value: Option<T>,
     waker: Option<Waker>,
+}
+
+impl<T> SpawnBlockingInner<T> {
+    fn new() -> Arc<Mutex<Self>> {
+        Arc::new(Mutex::new(SpawnBlockingInner {
+            value: None,
+            waker: None,
+        }))
+    }
 }
 
 impl<T: Send> Future for SpawnBlocking<T> {
