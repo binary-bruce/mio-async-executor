@@ -1,9 +1,11 @@
 use std::{
     future::Future,
     pin::Pin,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, OnceLock},
     task::{Context, Poll, Waker},
 };
+
+use threadpool::ThreadPool;
 
 pub fn spawn_blocking<T, F>(f: F) -> SpawnBlocking<T>
 where
@@ -11,17 +13,22 @@ where
     F: Send + 'static,
     T: Send + 'static,
 {
+    static THREAD_POOL: OnceLock<threadpool::ThreadPool> = OnceLock::new();
+
     let inner = Arc::new(Mutex::new(SpawnBlockingInner {
         value: None,
         waker: None,
     }));
-    let inner_cloned = inner.clone();
-    std::thread::spawn(move || {
-        let value = f();
-        let mut inner = inner_cloned.lock().unwrap();
-        inner.value = Some(value);
-        if let Some(waker) = inner.waker.take() {
-            waker.wake()
+
+    THREAD_POOL.get_or_init(|| ThreadPool::new(4)).execute({
+        let inner_cloned = inner.clone();
+        move || {
+            let value = f();
+            let mut inner = inner_cloned.lock().unwrap();
+            inner.value = Some(value);
+            if let Some(waker) = inner.waker.take() {
+                waker.wake()
+            }
         }
     });
 
@@ -60,8 +67,7 @@ mod tests {
 
     #[test]
     fn test_long_running_computation() {
-        let f = || 42;
-        let answer = Executor::block_on(spawn_blocking(f));
+        let answer = Executor::block_on(spawn_blocking(|| 42));
 
         assert_eq!(42, answer);
     }
