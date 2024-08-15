@@ -25,7 +25,7 @@ impl Future for UdpSocketReadiness {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         println!("polling UdpSocketReadiness");
-        Reactor::get().poll(self.token, cx) // register waker
+        Reactor::get().register_waker(self.token, cx) // register waker
     }
 }
 
@@ -42,7 +42,7 @@ impl UdpSocket {
         let mut socket = mio::net::UdpSocket::from_std(std_socket);
 
         let reactor = Reactor::get();
-        let token = reactor.unique_token();
+        let token = reactor.next_token();
 
         Reactor::get().registry.register(
             &mut socket,

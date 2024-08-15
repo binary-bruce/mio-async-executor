@@ -20,7 +20,7 @@ impl UdpSocket {
         let mut socket = mio::net::UdpSocket::from_std(std_socket);
 
         let reactor = Reactor::get();
-        let token = reactor.unique_token();
+        let token = reactor.next_token();
 
         Reactor::get().registry.register(
             &mut socket,
@@ -36,7 +36,7 @@ impl UdpSocket {
             match self.socket.send_to(buf, dest) {
                 Ok(value) => return Ok(value),
                 Err(error) if error.kind() == ErrorKind::WouldBlock => {
-                    std::future::poll_fn(|cx| Reactor::get().poll(self.token, cx)).await?
+                    std::future::poll_fn(|cx| Reactor::get().register_waker(self.token, cx)).await?
                 }
                 Err(error) => return Err(error),
             }
@@ -48,7 +48,7 @@ impl UdpSocket {
             match self.socket.recv_from(buf) {
                 Ok(value) => return Ok(value),
                 Err(error) if error.kind() == ErrorKind::WouldBlock => {
-                    std::future::poll_fn(|cx| Reactor::get().poll(self.token, cx)).await?
+                    std::future::poll_fn(|cx| Reactor::get().register_waker(self.token, cx)).await?
                 }
                 Err(error) => return Err(error),
             }

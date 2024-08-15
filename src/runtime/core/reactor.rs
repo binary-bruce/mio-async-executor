@@ -8,7 +8,9 @@ use std::{
 
 use mio::{Events, Registry, Token};
 
-pub enum Status {
+use super::event_token::EventToken;
+
+enum Status {
     Awaited(Waker),
     Happened,
 }
@@ -40,7 +42,8 @@ impl Reactor {
         })
     }
 
-    pub fn poll(&self, token: Token, cx: &mut Context) -> Poll<std::io::Result<()>> {
+    /// register the waker
+    pub fn register_waker(&self, token: Token, cx: &mut Context) -> Poll<std::io::Result<()>> {
         let mut guard = self.statuses.lock().unwrap();
         match guard.entry(token) {
             Entry::Vacant(vacant) => {
@@ -65,12 +68,8 @@ impl Reactor {
         }
     }
 
-    pub fn unique_token(&self) -> Token {
-        use std::sync::atomic::{AtomicUsize, Ordering};
-
-        static CURRENT_TOKEN: AtomicUsize = AtomicUsize::new(0);
-
-        Token(CURRENT_TOKEN.fetch_add(1, Ordering::Relaxed))
+    pub fn next_token(&self) -> Token {
+        EventToken::next()
     }
 }
 
